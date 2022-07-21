@@ -59,3 +59,6 @@ previously developed a Python library for connecting to Starlink, so I'm just us
 - An internally written [cradlepoint API](cradlepoint) for connecting to the router's HTTP api
 
 I haven't figured out yet how I'm gonna deploy it.
+
+[Starlink]: https://www.starlink.com/
+[Cradlepoint]: https://cradlepoint.com/ 
