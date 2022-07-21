@@ -1,0 +1,1 @@
+"""A utility to switch my internet between Starlink and LTE Backup with Cradlepoint."""
