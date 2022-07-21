@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Unlicense
 
 """Interface for interacting with my Cradlepoint router.
 

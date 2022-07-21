@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Unlicense
+
 import asyncio
 
 from internet_switcher.core import InternetSwitcher

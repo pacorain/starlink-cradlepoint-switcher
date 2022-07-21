@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Unlicense
+
 import logging
 
 class LoggingMeta(type):

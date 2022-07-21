@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Unlicense
+
 from typing import TYPE_CHECKING, Any, Awaitable
 
 import aiohttp

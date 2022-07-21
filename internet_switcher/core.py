@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Unlicense
+
 import asyncio
 from spacex.starlink.aio import AsyncStarlinkDish
 
