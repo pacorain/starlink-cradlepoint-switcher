@@ -33,7 +33,9 @@ flowchart RL
 ```
 
 Because of this setup, the Cradlepoint router is in control of when to use Starlink for internet,
-and when to use our hotspot plan. However, I've run into two problems:
+and when to use our hotspot plan. 
+
+However, I've run into two problems:
 
 1. The Cradlepoint isn't very good at detecting when the Starlink satellite is down. It can take up 
 to minutes, which is frustrating when I'm trying to work, particularly when Starlink is having
