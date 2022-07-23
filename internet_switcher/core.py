@@ -9,26 +9,38 @@ from cradlepoint.api import CradlepointRouter
 
 
 class InternetSwitcher(LoggingMixin):
+    def __init__(self, config: Config):
+        self.starlink = AsyncStarlinkDish(address=f"{config.starlink_ip_address}:{config.starlink_port}")
+        self.cradlepoint = CradlepointRouter(config)
+
     @classmethod
     async def main(cls):
         cls.info("Loading config and initializing")
         config = Config.load()
-
-        starlink = AsyncStarlinkDish(address=f"{config.starlink_ip_address}:{config.starlink_port}")
-        cradlepoint = CradlepointRouter(config)
+        switcher = cls(config)
 
         try:
             cls.info("Testing connections")
-            await asyncio.gather(
-                starlink.connect(),
-                cradlepoint.connect()
-            )
+            await switcher.connct()
 
             cls.info("Starting loop")
             # TODO: What do I put here?
         finally:
             cls.info("Closing connections")
-            await starlink.close()
-            await cradlepoint.close()
+            await switcher.close()
+
+    async def connect(self):
+        """Initiate connections needed to switch Internet connections"""
+        await asyncio.gather(
+            self.starlink.connect(),
+            self.cradlepoint.connect()
+        )
+
+    async def close(self):
+        """Closes the connections"""
+        await asyncio.gather(
+            self.starlink.close(),
+            self.cradlepoint.close()
+        )
 
             
