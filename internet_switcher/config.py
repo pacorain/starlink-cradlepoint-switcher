@@ -6,6 +6,8 @@ import os
 import logging
 from typing import MutableMapping
 
+from internet_switcher.util.types import try_bool
+
 logger = logging.getLogger(__name__)
 
 class Config:
@@ -15,7 +17,8 @@ class Config:
         'cradlepoint_username',
         'cradlepoint_password',
         'starlink_ip_address',
-        'starlink_port'
+        'starlink_port',
+        'ignore_errors'
     )
 
     def __init__(self):
@@ -25,6 +28,7 @@ class Config:
         self.cradlepoint_password = 'admin'
         self.starlink_ip_address = '192.168.100.1'
         self.starlink_port = '9200'
+        self.ignore_errors = True
 
     @classmethod
     def load(cls):
@@ -49,6 +53,7 @@ class Config:
         self.cradlepoint_password = os.getenv('CRADLEPOINT_PASSWORD', self.cradlepoint_password)
         self.starlink_ip_address = os.getenv('STARLINK_IP_ADDRESS', self.starlink_ip_address)
         self.starlink_port = os.getenv('STARLINK_PORT', self.starlink_port)
+        self.ignore_errors = try_bool(os.getenv('IGNORE_ERRORS', self.ignore_errors), self.ignore_errors)
 
         return self
 
@@ -71,9 +76,13 @@ class Config:
             self.cradlepoint_password = cradlepoint_config.get('password', self.cradlepoint_password)
 
         if 'starlink' in parser:
-            starlink_config = parser.get['starlink']
+            starlink_config = parser['starlink']
             self.starlink_ip_address = starlink_config.get('ip_address', self.starlink_ip_address)
             self.starlink_port = starlink_config.get('port', self.starlink_port)
+
+        if 'core' in parser:
+            core_config = parser['core']
+            self.ignore_errors = core_config.getboolean('ignore_errors', self.ignore_errors)
 
         return self
 
