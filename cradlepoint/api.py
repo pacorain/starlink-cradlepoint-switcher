@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Unlicense
 
-from typing import TYPE_CHECKING, Any, Awaitable
+import json
+from typing import TYPE_CHECKING, Any, Awaitable, Union
 
 import aiohttp
 
@@ -8,13 +9,15 @@ import os
 import re
 import logging
 
+from internet_switcher.util.logging import LoggingMixin
+
 if TYPE_CHECKING:
     from internet_switcher.config import Config
 
 logger = logging.getLogger(__name__)
 
 
-class CradlepointRouter:
+class CradlepointRouter(LoggingMixin):
     def __init__(self, config: 'Config'):
         self.session = aiohttp.ClientSession(
             base_url=f"http://{config.cradlepoint_server}",
@@ -27,7 +30,7 @@ class CradlepointRouter:
     async def __aexit__(self):
         await self.close()
 
-    def __getattr__(self, __name) -> Any:
+    def __getattr__(self, __name) -> 'Endpoint':
         num_attr = re.match(r"\_(\d+)", __name)
         if num_attr:
             __name = num_attr.group(1)
@@ -36,12 +39,22 @@ class CradlepointRouter:
     async def get(self, path):
         return await self.request('GET', path)
 
-    async def request(self, method, path,):
-        async with self.session.request(method=method, url='/api/' + str(path),  ) as response:
+    async def put(self, path, value):
+        return await self.request('PUT', path, value=value)
+
+    async def request(self, method: str, path, value=None):
+        self.debug(f"Making {method.upper()} request to path {str(path)}")
+        if value is not None:
+            data = {'data': json.dumps(value)}
+        else:
+            data = None
+        async with self.session.request(method=method, url='/api/' + str(path), data=data) as response:
             assert response.status == 200
             json_response = await response.json()
             assert json_response['success'] == True
-            return json_response['data']
+            data = json_response['data']
+            self.debug(f"Data: {json.dumps(data)[:100]}")
+            return data
 
     async def is_valid(self) -> bool:
         """Check the config by making a request.
@@ -93,11 +106,14 @@ class Endpoint:
         self._api = api
         self._endpoint_path = path
 
-    def __getattr__(self, __name: str) -> Any:
+    def __getattr__(self, __name: str) -> 'Endpoint':
         num_attr = re.match(r"\_(\d+)", __name)
         if num_attr:
             __name = num_attr.group(1)
         return Endpoint(self._api, os.path.join(self._endpoint_path, __name))
+
+    def __getitem__(self, __name: Union[str, int]) -> 'Endpoint':
+        return Endpoint(self._api, os.path.join(self._endpoint_path, str(__name)))
 
     def __call__(self, *args) -> Awaitable[Any]:
         return self.__acall__(*args)
@@ -110,7 +126,7 @@ class Endpoint:
             raise ValueError("More than one arg is not supported yet")
 
         else:
-            return await self._api.post(self, args[0])
+            return await self._api.put(self, args[0])
 
     def __repr__(self) -> str:
         return self._endpoint_path

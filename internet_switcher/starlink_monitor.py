@@ -58,6 +58,19 @@ class StarlinkMonitor(LoggingMixin):
         self.running = False
         self.is_stable = None
 
+    async def wait(self, seconds: float):
+        """Similar to asyncio.sleep, but immediately raises exceptions if one is thrown."""
+        stop_time = datetime.now() + timedelta(seconds=seconds)
+        while True:
+            if self.task.done():
+                # Raise exceptions
+                await self.task
+            if datetime.now() < stop_time:
+                # Yield to other tasks
+                await asyncio.sleep(0.05)
+            else:
+                break
+
     async def _loop(self):
         while self.running:
             try:
